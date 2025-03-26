@@ -91,6 +91,10 @@ echo Installing mss...
 python -m pip install "mss>=%REQ_MSS%"
 if errorlevel 1 goto INSTALL_ERROR
 
+echo Installing Pillow...
+python -m pip install "Pillow>=10.0.0"
+if errorlevel 1 goto INSTALL_ERROR
+
 goto INSTALL_SUCCESS
 
 :INSTALL_ERROR
@@ -233,4 +237,4 @@ pause >nul
 
 echo [9/9] Starting DCS GunCam...
 start "" "%INSTALL_DIR%\GunCam.bat"
-exit 
+exit
