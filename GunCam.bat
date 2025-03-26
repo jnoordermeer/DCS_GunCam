@@ -1,4 +1,4 @@
 @echo off
-cd /d "%~dp0"
+echo Starting DCS GunCam...
 python src/main.py
-pause
+pause 

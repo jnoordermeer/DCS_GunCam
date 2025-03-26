@@ -1,56 +1,53 @@
 @echo off
-setlocal enabledelayedexpansion
-
-REM Check for admin rights
-net session >nul 2>&1
-if errorlevel 1 (
-    echo Error: This script requires administrator privileges.
-    echo Please right-click and select "Run as administrator".
-    pause
-    exit /b 1
-)
-
-REM Get the current directory
-set "INSTALL_DIR=%~dp0"
-set "INSTALL_DIR=!INSTALL_DIR:~0,-1!"
-
 echo ========================================
-echo    DCS GunCam Installer
-echo    Version 1.5
+echo    DCS GunCam Installer v1.4.1
 echo ========================================
 echo.
 
-REM Check if Python is installed
-echo [1/8] Checking Python installation...
-echo.
-
-python --version > nul 2>&1
+echo [1/9] Checking Python version...
+python --version > "%TEMP%\pyver.txt" 2>&1
 if errorlevel 1 (
-    echo Error: Python is not installed or not in PATH!
-    echo Please install Python from python.org
+    echo Python is not installed!
+    echo Please download and install Python 3.x from:
+    echo https://www.python.org/downloads/
+    echo.
     echo Make sure to check "Add Python to PATH" during installation.
     pause
     exit /b 1
 )
+set /p PYVER=<"%TEMP%\pyver.txt"
+echo Found: %PYVER%
+del "%TEMP%\pyver.txt"
 
-echo Python installation found.
-echo.
-
-REM Create default video directory
-echo [2/8] Creating video directory...
-echo.
-
-mkdir "C:\Users\Public\Videos\DCS_GunCam" 2> nul
+echo [2/9] Checking pip installation...
+python -m pip --version > "%TEMP%\pipver.txt" 2>&1
 if errorlevel 1 (
-    echo Warning: Could not create video directory. Please create it manually.
-) else (
-    echo Video directory created successfully.
+    echo pip is not installed!
+    echo Please run the following command to install pip:
+    echo python -m ensurepip --default-pip
+    echo.
+    echo Or download get-pip.py from:
+    echo https://bootstrap.pypa.io/get-pip.py
+    pause
+    exit /b 1
 )
+set /p PIPVER=<"%TEMP%\pipver.txt"
+echo Found: %PIPVER%
+del "%TEMP%\pipver.txt"
 
-echo [3/8] Upgrading pip, setuptools, and wheel...
+echo [3/9] Checking required packages...
 echo.
 
-REM Upgrade base packages
+REM Define minimum versions
+set "REQ_PYQT6=6.6.1"
+set "REQ_PYGAME=2.5.2"
+set "REQ_PYWIN32=310"
+set "REQ_OPENCV=4.9.0.80"
+set "REQ_NUMPY=1.26.4"
+set "REQ_MSS=9.0.1"
+
+REM First ensure setuptools and wheel are installed
+echo Installing base requirements...
 python -m pip install --upgrade pip setuptools wheel
 if errorlevel 1 (
     echo.
@@ -60,132 +57,180 @@ if errorlevel 1 (
     exit /b 1
 )
 
-echo [4/8] Checking installed packages...
+echo Installing/Upgrading required packages...
 echo.
 
-REM Get list of installed packages
-for /f "tokens=1" %%i in ('python -m pip list') do (
-    set "pkg_%%i=1"
-)
-
-REM Check and install required packages if missing
-if not defined pkg_PyQt6 (
-    python -m pip install PyQt6>=6.4.2
-)
-
-if not defined pkg_pygame (
-    python -m pip install pygame>=2.5.2
-)
-
-if not defined pkg_pywin32 (
-    python -m pip install pywin32>=306
-)
-
-if not defined pkg_opencv-python (
-    python -m pip install opencv-python>=4.8.0.74
-)
-
-if not defined pkg_numpy (
-    python -m pip install numpy>=1.24.3
-)
-
-if not defined pkg_mss (
-    python -m pip install mss>=9.0.1
-)
-
-echo [5/8] Creating shortcuts...
-echo.
-
-REM Create VBScript for shortcuts
-set "VBS_FILE=%TEMP%\CreateShortcut.vbs"
-(
-    echo Set objWSHShell = CreateObject^("WScript.Shell"^)
-    echo strDesktop = objWSHShell.SpecialFolders^("Desktop"^)
-    echo strStartMenu = objWSHShell.SpecialFolders^("Programs"^)
-    echo strAppPath = "%INSTALL_DIR%"
-    echo
-    echo ' Create Desktop shortcut
-    echo Set objShortcut = objWSHShell.CreateShortcut^(strDesktop ^& "\DCS GunCam.lnk"^)
-    echo objShortcut.TargetPath = strAppPath ^& "\GunCam.bat"
-    echo objShortcut.WorkingDirectory = strAppPath
-    echo objShortcut.IconLocation = strAppPath ^& "\src\ag_mouse.ico"
-    echo objShortcut.Description = "DCS World GunCam Recording Application"
-    echo objShortcut.Save
-    echo
-    echo ' Create Start Menu folder and shortcuts
-    echo strFolder = strStartMenu ^& "\DCS GunCam"
-    echo Set objFSO = CreateObject^("Scripting.FileSystemObject"^)
-    echo If Not objFSO.FolderExists^(strFolder^) Then
-    echo     objFSO.CreateFolder^(strFolder^)
-    echo End If
-    echo
-    echo ' Create Start Menu shortcut
-    echo Set objShortcut = objWSHShell.CreateShortcut^(strFolder ^& "\DCS GunCam.lnk"^)
-    echo objShortcut.TargetPath = strAppPath ^& "\GunCam.bat"
-    echo objShortcut.WorkingDirectory = strAppPath
-    echo objShortcut.IconLocation = strAppPath ^& "\src\ag_mouse.ico"
-    echo objShortcut.Description = "DCS World GunCam Recording Application"
-    echo objShortcut.Save
-    echo
-    echo ' Create Folder shortcut
-    echo Set objShortcut = objWSHShell.CreateShortcut^(strFolder ^& "\Installation Folder.lnk"^)
-    echo objShortcut.TargetPath = strAppPath
-    echo objShortcut.IconLocation = strAppPath ^& "\src\ag_mouse.ico"
-    echo objShortcut.Save
-) > "%VBS_FILE%"
-
-REM Execute the VBScript
-cscript //nologo "%VBS_FILE%"
-del "%VBS_FILE%"
-
-echo [6/8] Configure autostart with DCS World...
-echo.
-
-set /p AUTOSTART="Would you like DCS GunCam to start automatically with DCS World? (Y/N): "
-if /i "%AUTOSTART%"=="Y" (
-    call "DCS autostart on.bat"
-) else (
-    call "DCS autostart off.bat"
-)
-
-echo [7/8] Verifying installation...
-python -c "import sys, pygame, win32gui, cv2, numpy, mss, PyQt6" > nul 2>&1
+REM Check if pygame is already installed
+python -c "import pygame" >nul 2>&1
 if errorlevel 1 (
-    echo.
-    echo Error: Package verification failed!
-    echo Some packages may not have installed correctly.
-    echo Please try running the installer again as administrator.
+    echo Installing pygame...
+    python -m pip install --only-binary pygame "pygame>=%REQ_PYGAME%"
+    if errorlevel 1 goto INSTALL_ERROR
+) else (
+    echo pygame is already installed, skipping...
+)
+
+REM Install other packages one by one
+echo Installing PyQt6...
+python -m pip install "PyQt6>=%REQ_PYQT6%" "PyQt6-Qt6>=%REQ_PYQT6%" "PyQt6-sip>=13.6.0"
+if errorlevel 1 goto INSTALL_ERROR
+
+echo Installing pywin32...
+python -m pip install "pywin32>=%REQ_PYWIN32%"
+if errorlevel 1 goto INSTALL_ERROR
+
+echo Installing opencv-python...
+python -m pip install "opencv-python>=%REQ_OPENCV%"
+if errorlevel 1 goto INSTALL_ERROR
+
+echo Installing numpy...
+python -m pip install "numpy>=%REQ_NUMPY%"
+if errorlevel 1 goto INSTALL_ERROR
+
+echo Installing mss...
+python -m pip install "mss>=%REQ_MSS%"
+if errorlevel 1 goto INSTALL_ERROR
+
+goto INSTALL_SUCCESS
+
+:INSTALL_ERROR
+echo.
+echo Error: Package installation failed!
+echo Please try running the installer as administrator.
+pause
+exit /b 1
+
+:INSTALL_SUCCESS
+echo [4/9] Installing application files...
+set "INSTALL_DIR=%APPDATA%\GunCam_By_Protodutch"
+if not exist "%INSTALL_DIR%" mkdir "%INSTALL_DIR%"
+
+REM Copy all files except settings.ini if it exists
+if exist "%INSTALL_DIR%\settings.ini" (
+    echo Preserving existing settings.ini...
+    xcopy /E /I /Y /EXCLUDE:settings.ini "%~dp0*" "%INSTALL_DIR%\"
+) else (
+    xcopy /E /I /Y "%~dp0*" "%INSTALL_DIR%\"
+)
+
+if errorlevel 1 (
+    echo Error: Failed to copy files to %INSTALL_DIR%
+    echo Please make sure you have write permissions.
     pause
     exit /b 1
 )
 
+echo [5/9] Creating desktop shortcut...
+echo.
+
+REM Create VBScript for desktop shortcut
+echo Set oWS = WScript.CreateObject("WScript.Shell") > "%TEMP%\CreateShortcuts.vbs"
+echo Set oFSO = WScript.CreateObject("Scripting.FileSystemObject") >> "%TEMP%\CreateShortcuts.vbs"
+echo strAppPath = "%INSTALL_DIR%" >> "%TEMP%\CreateShortcuts.vbs"
+echo strDesktop = oWS.SpecialFolders("Desktop") >> "%TEMP%\CreateShortcuts.vbs"
+echo If oFSO.FileExists(strAppPath ^& "\src\ag_mouse_.ico") Then >> "%TEMP%\CreateShortcuts.vbs"
+echo     strIcon = strAppPath ^& "\src\ag_mouse_.ico" >> "%TEMP%\CreateShortcuts.vbs"
+echo Else >> "%TEMP%\CreateShortcuts.vbs"
+echo     strIcon = "%SystemRoot%\System32\SHELL32.dll,3" >> "%TEMP%\CreateShortcuts.vbs"
+echo End If >> "%TEMP%\CreateShortcuts.vbs"
+echo Set oLink = oWS.CreateShortcut(strDesktop ^& "\DCS GunCam.lnk") >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.TargetPath = strAppPath ^& "\GunCam.bat" >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.WorkingDirectory = strAppPath >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.Description = "DCS GunCam Recording Application" >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.IconLocation = strIcon >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.Save >> "%TEMP%\CreateShortcuts.vbs"
+
+echo [6/9] Creating Start Menu shortcuts...
+echo.
+
+REM Add Start Menu shortcuts to the VBScript
+echo strStartMenu = oWS.SpecialFolders("Programs") >> "%TEMP%\CreateShortcuts.vbs"
+echo If Not oFSO.FolderExists(strStartMenu ^& "\DCS GunCam") Then >> "%TEMP%\CreateShortcuts.vbs"
+echo     oFSO.CreateFolder(strStartMenu ^& "\DCS GunCam") >> "%TEMP%\CreateShortcuts.vbs"
+echo End If >> "%TEMP%\CreateShortcuts.vbs"
+echo Set oLink = oWS.CreateShortcut(strStartMenu ^& "\DCS GunCam\DCS GunCam.lnk") >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.TargetPath = strAppPath ^& "\GunCam.bat" >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.WorkingDirectory = strAppPath >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.Description = "DCS GunCam Recording Application" >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.IconLocation = strIcon >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.Save >> "%TEMP%\CreateShortcuts.vbs"
+echo Set oLink = oWS.CreateShortcut(strStartMenu ^& "\DCS GunCam\DCS GunCam Folder.lnk") >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.TargetPath = strAppPath >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.Description = "Open DCS GunCam Installation Folder" >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.IconLocation = strIcon >> "%TEMP%\CreateShortcuts.vbs"
+echo oLink.Save >> "%TEMP%\CreateShortcuts.vbs"
+
+cscript //nologo "%TEMP%\CreateShortcuts.vbs"
+del "%TEMP%\CreateShortcuts.vbs"
+
+echo [7/9] Configure DCS World autostart...
+echo.
+
+REM Check for DCS installation
+set "DCS_PATH=%USERPROFILE%\Saved Games"
+if exist "%DCS_PATH%\DCS.openbeta\Scripts" (
+    set "ACTIVE_DCS_PATH=%DCS_PATH%\DCS.openbeta"
+) else if exist "%DCS_PATH%\DCS\Scripts" (
+    set "ACTIVE_DCS_PATH=%DCS_PATH%\DCS"
+) else (
+    echo Warning: Could not find DCS World installation.
+    echo Skipping autostart configuration.
+    goto SKIP_AUTOSTART
+)
+
+:AUTOSTART_PROMPT
+echo Found DCS World installation at: %ACTIVE_DCS_PATH%
+set /p AUTOSTART="Do you want DCS GunCam to start automatically with DCS World? (Y/N): "
+if /i "%AUTOSTART%"=="Y" (
+    echo Installing autostart hook...
+    if exist "%INSTALL_DIR%\DCS autostart on.bat" (
+        cd /d "%INSTALL_DIR%"
+        call "DCS autostart on.bat"
+    )
+) else if /i "%AUTOSTART%"=="N" (
+    echo Skipping autostart setup.
+) else (
+    echo Please enter Y or N.
+    goto AUTOSTART_PROMPT
+)
+
+:SKIP_AUTOSTART
+echo [8/9] Installation Summary
 echo.
 echo ========================================
 echo    Installation Complete!
 echo ========================================
 echo.
-echo DCS GunCam has been installed successfully!
+echo Installation location: %INSTALL_DIR%
+echo.
+echo Shortcuts created:
+echo - Desktop: DCS GunCam
+echo - Start Menu: DCS GunCam
+echo.
+if /i "%AUTOSTART%"=="Y" (
+    echo DCS World autostart: Enabled
+) else (
+    echo DCS World autostart: Disabled
+)
 echo.
 echo Before starting:
-echo 1. Configure your joystick settings:
-    echo    - Start DCS GunCam
-    echo    - Click 'Settings'
-    echo    - Go to 'Controls' tab
-    echo    - Set keys for each action using your desired joystick button/key
+echo ---------------
+echo 1. Configure your settings:
+echo    - Gun Trigger (default: Button 0)
+echo    - Canon Trigger (default: Button 1)
+echo    - Rockets/Bomb Trigger (default: Button 5)
+echo    - Pre-trigger duration in seconds (default: 6)
+echo    - Post-trigger duration in seconds (default: 6)
+echo    - Recording quality (default: Normal 1080p)
+echo    - FPS (default: 30)
+echo    - Pilot Name
+echo    - Flight Unit
 echo.
-echo 2. Optional settings to check:
-    echo    - Video save location
-    echo    - Recording quality
-    echo    - Overlay position
-    echo    - Automatic recording triggers
+echo All settings are saved automatically.
 echo.
-echo All settings are saved in: %INSTALL_DIR%\src\settings.cfg
-echo.
-echo You can access DCS GunCam through:
-echo - Desktop shortcut
-echo - Start Menu ^> DCS GunCam
-echo - Installation folder: %INSTALL_DIR%
-echo.
-echo Thank you for installing DCS GunCam!
-echo.
-pause
+echo Press any key to start DCS GunCam...
+pause >nul
+
+echo [9/9] Starting DCS GunCam...
+start "" "%INSTALL_DIR%\GunCam.bat"
+exit 

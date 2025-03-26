@@ -1,29 +1,52 @@
 @echo off
-setlocal enabledelayedexpansion
+echo ========================================
+echo    DCS GunCam Autostart Disable
+echo ========================================
+echo.
 
-REM Set the target file path
-set "TARGET_FILE=%LOCALAPPDATA%\DCS.openbeta\Config\autoexec.cfg"
-
-REM Check if autoexec.cfg exists
-if exist "%TARGET_FILE%" (
-    REM Create a temporary file
-    set "TEMP_FILE=%TEMP%\autoexec.tmp"
-    
-    REM Copy all lines except the one containing our command
-    findstr /v /c:"dofile('" "%TARGET_FILE%" > "%TEMP_FILE%"
-    
-    REM Replace the original file
-    move /y "%TEMP_FILE%" "%TARGET_FILE%" >nul
-    
-    echo Autostart disabled successfully.
-) else (
-    echo No autoexec.cfg found. Autostart was not enabled.
+REM Check if running as administrator
+net session >nul 2>&1
+if errorlevel 1 (
+    echo This script requires administrator privileges.
+    echo Please run as administrator.
+    pause
+    exit /b 1
 )
 
-REM Update settings.cfg
-set "SETTINGS_FILE=%~dp0src\settings.cfg"
-powershell -Command "(Get-Content '!SETTINGS_FILE!') -replace 'Auto_Start = True', 'Auto_Start = False' | Set-Content '!SETTINGS_FILE!'"
+REM Get DCS World Saved Games path
+set "DCS_PATH=%USERPROFILE%\Saved Games"
+if not exist "%DCS_PATH%" (
+    echo Error: Could not find Saved Games folder.
+    pause
+    exit /b 1
+)
+
+REM Look for DCS folders
+set "FOUND_DCS=0"
+for /d %%D in ("%DCS_PATH%\DCS*") do (
+    set "DCS_FOLDER=%%D"
+    set "FOUND_DCS=1"
+)
+
+if "%FOUND_DCS%"=="0" (
+    echo Error: Could not find DCS World installation in Saved Games.
+    echo Please make sure DCS World is installed.
+    pause
+    exit /b 1
+)
+
+echo Found DCS folder: %DCS_FOLDER%
+
+REM Remove the hook script if it exists
+if exist "%DCS_FOLDER%\Scripts\Hooks\DCSGunCam.lua" (
+    del "%DCS_FOLDER%\Scripts\Hooks\DCSGunCam.lua"
+    echo Hook script removed successfully.
+) else (
+    echo Hook script was not found ^(already disabled^).
+)
 
 echo.
-echo Configuration complete.
-pause
+echo Autostart disabled successfully!
+echo DCS GunCam will no longer start automatically with DCS World.
+echo.
+pause 

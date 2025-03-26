@@ -1,83 +1,86 @@
-DCS GunCam - Requirements and Instructions
+===========================================
+DCS GunCam v1.5 - Installation Requirements
+===========================================
 
-System Requirements:
+1. PYTHON INSTALLATION
+---------------------
+First, install Python 3.13 or newer. You have two options:
+
+A) Windows Store (Recommended):
+   - Open Microsoft Store
+   - Search for "Python 3.13"
+   - Click "Get" or "Install"
+   - Link: https://apps.microsoft.com/detail/9NRWMJP3717K
+
+B) Python.org:
+   - Visit: https://www.python.org/downloads/
+   - Download Python 3.13
+   - IMPORTANT: During installation:
+     * Check "Add python.exe to PATH"
+     * Check "Install for all users"
+     * Choose "Customize installation"
+     * Enable all optional features
+     * Install to: C:\Python313
+
+2. VERIFY PYTHON INSTALLATION
+----------------------------
+Open PowerShell and type:
+python --version
+
+You should see: Python 3.13.x
+If not, try closing and reopening PowerShell.
+
+3. REQUIRED PACKAGES
 -------------------
-- Windows 10 or 11
-- Python 3.8 or higher
-- 4GB RAM minimum (8GB recommended)
-- DirectX 11 compatible graphics card
-- DCS World installed
-- 1GB free disk space for installation
-- Additional disk space for recordings
+The following packages will be installed by install.bat:
 
-Required Python Packages:
-------------------------
-- PyQt6 >= 6.4.2
-- pygame >= 2.5.2
-- pywin32 >= 306
-- opencv-python >= 4.8.0.74
-- numpy >= 1.24.3
-- mss >= 9.0.1
+pywin32==310        # Windows API access for window detection and control
+pygame==2.6.1       # Joystick/HOTAS input handling
+opencv-python==4.9.0.80  # Video processing and recording
+numpy==1.26.4       # Required for video frame manipulation
+mss==9.0.1         # Fast screen capture
+PyQt6==6.6.1       # Modern GUI framework
 
-Installation Instructions:
--------------------------
-1. Install Python 3.x from python.org
-   - Make sure to check "Add Python to PATH" during installation
+4. INSTALLATION STEPS
+--------------------
+1. Make sure Python 3.13 is installed (see step 1)
+2. Double-click install.bat
+3. Wait for all packages to install
+4. When complete, press any key to close the installer
 
-2. Run install.bat as administrator
-   - This will install all required packages
-   - Create necessary directories
-   - Set up shortcuts
+5. STARTING THE APPLICATION
+--------------------------
+1. Double-click start.bat
+2. Configure your triggers:
+   - Gun Trigger
+   - Canon Trigger
+   - Rockets/Bombs Trigger
+3. Set your desired recording quality and FPS
+4. Optional: Enter pilot name and unit
 
-3. Start DCS World
+6. RECORDING SETTINGS
+--------------------
+Default configuration:
+- Pre-trigger buffer: 10 seconds
+- Post-trigger recording: 10 seconds
+- Quality: Normal (1080p)
+- FPS: 30
 
-4. Launch DCS GunCam using:
-   - Desktop shortcut
-   - Start Menu > DCS GunCam
-   - GunCam.bat in the installation folder
+You can adjust these in the application settings.
 
-First Time Setup:
-----------------
-1. Configure your trigger buttons:
-   - Click each trigger button
-   - Press the corresponding button on your joystick
-
-2. Set your pilot name and unit
-
-3. Adjust recording settings if desired:
-   - Buffer time (pre-recording duration)
-   - Post-trigger time
-   - Video quality
-   - Frame rate
-
-Troubleshooting:
+7. SAVE LOCATION
 ---------------
-1. If Python is not recognized:
-   - Reinstall Python
-   - Make sure to check "Add Python to PATH"
+Videos are automatically saved to:
+C:\Users\[Username]\Videos\DCS_GunCam\[Date]\GunCam_[Time].mp4
 
-2. If packages fail to install:
-   - Run install.bat as administrator
-   - Check internet connection
-   - Try manual installation using pip
+8. TROUBLESHOOTING
+-----------------
+If you encounter issues:
+1. Make sure Python 3.13 is correctly installed
+2. Try running install.bat again
+3. Check if your joystick is recognized in Windows
+4. Ensure you have sufficient disk space
+5. Make sure you have admin rights
 
-3. If DCS GunCam doesn't start:
-   - Check if Python is installed correctly
-   - Verify all packages are installed
-   - Run as administrator if needed
-
-4. If recording doesn't work:
-   - Make sure DCS World is running
-   - Check trigger button configuration
-   - Verify disk space availability
-
-Support:
---------
-For support and updates, visit:
-- ProtoDutch.com
-- GitHub Issues
-
-License:
---------
-This software is licensed under the MIT License.
-See LICENSE file for details.
+For additional support:
+Visit: https://www.protodutch.com 
