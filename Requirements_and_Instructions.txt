@@ -1,0 +1,83 @@
+DCS GunCam - Requirements and Instructions
+
+System Requirements:
+-------------------
+- Windows 10 or 11
+- Python 3.8 or higher
+- 4GB RAM minimum (8GB recommended)
+- DirectX 11 compatible graphics card
+- DCS World installed
+- 1GB free disk space for installation
+- Additional disk space for recordings
+
+Required Python Packages:
+------------------------
+- PyQt6 >= 6.4.2
+- pygame >= 2.5.2
+- pywin32 >= 306
+- opencv-python >= 4.8.0.74
+- numpy >= 1.24.3
+- mss >= 9.0.1
+
+Installation Instructions:
+-------------------------
+1. Install Python 3.x from python.org
+   - Make sure to check "Add Python to PATH" during installation
+
+2. Run install.bat as administrator
+   - This will install all required packages
+   - Create necessary directories
+   - Set up shortcuts
+
+3. Start DCS World
+
+4. Launch DCS GunCam using:
+   - Desktop shortcut
+   - Start Menu > DCS GunCam
+   - GunCam.bat in the installation folder
+
+First Time Setup:
+----------------
+1. Configure your trigger buttons:
+   - Click each trigger button
+   - Press the corresponding button on your joystick
+
+2. Set your pilot name and unit
+
+3. Adjust recording settings if desired:
+   - Buffer time (pre-recording duration)
+   - Post-trigger time
+   - Video quality
+   - Frame rate
+
+Troubleshooting:
+---------------
+1. If Python is not recognized:
+   - Reinstall Python
+   - Make sure to check "Add Python to PATH"
+
+2. If packages fail to install:
+   - Run install.bat as administrator
+   - Check internet connection
+   - Try manual installation using pip
+
+3. If DCS GunCam doesn't start:
+   - Check if Python is installed correctly
+   - Verify all packages are installed
+   - Run as administrator if needed
+
+4. If recording doesn't work:
+   - Make sure DCS World is running
+   - Check trigger button configuration
+   - Verify disk space availability
+
+Support:
+--------
+For support and updates, visit:
+- ProtoDutch.com
+- GitHub Issues
+
+License:
+--------
+This software is licensed under the MIT License.
+See LICENSE file for details.
