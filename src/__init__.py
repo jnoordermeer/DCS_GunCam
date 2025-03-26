@@ -1,3 +1,3 @@
-# DCS GunCam Package
-
-__version__ = '1.5'
+"""
+DCS GunCam package
+""" 
