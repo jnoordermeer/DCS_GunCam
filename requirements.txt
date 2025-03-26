@@ -1,0 +1,8 @@
+setuptools>=68.2.2
+wheel>=0.41.2
+pywin32==310
+pygame==2.6.1
+opencv-python==4.9.0.80
+numpy==1.26.4
+mss==9.0.1
+PyQt6==6.6.1
