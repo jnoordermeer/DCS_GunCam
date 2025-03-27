@@ -1,70 +1,41 @@
 @echo off
-echo ========================================
-echo    DCS GunCam Autostart Enable
-echo ========================================
-echo.
+setlocal enabledelayedexpansion
 
-REM Check if running as administrator
-net session >nul 2>&1
-if errorlevel 1 (
-    echo This script requires administrator privileges.
-    echo Please run as administrator.
-    pause
-    exit /b 1
+REM Get the current directory
+set "CURRENT_DIR=%~dp0"
+REM Remove trailing backslash
+set "CURRENT_DIR=!CURRENT_DIR:~0,-1!"
+
+REM Set the target file path
+set "TARGET_FILE=%LOCALAPPDATA%\DCS.openbeta\Config\autoexec.cfg"
+
+REM Create directory if it doesn't exist
+if not exist "%LOCALAPPDATA%\DCS.openbeta\Config" (
+    mkdir "%LOCALAPPDATA%\DCS.openbeta\Config"
 )
 
-REM Get DCS World Saved Games path
-set "DCS_PATH=%USERPROFILE%\Saved Games"
-if not exist "%DCS_PATH%" (
-    echo Error: Could not find Saved Games folder.
-    pause
-    exit /b 1
+REM Check if autoexec.cfg exists, if not create it
+if not exist "%TARGET_FILE%" (
+    echo -- DCS World autoexec.cfg> "%TARGET_FILE%"
 )
 
-REM Look for DCS folders (excluding release server)
-set "FOUND_DCS=0"
-if exist "%DCS_PATH%\DCS.openbeta\Scripts" (
-    set "DCS_FOLDER=%DCS_PATH%\DCS.openbeta"
-    set "FOUND_DCS=1"
-) else if exist "%DCS_PATH%\DCS\Scripts" (
-    set "DCS_FOLDER=%DCS_PATH%\DCS"
-    set "FOUND_DCS=1"
+REM Create the Hooks directory if it doesn't exist
+if not exist "%LOCALAPPDATA%\DCS.openbeta\Scripts\Hooks" (
+    mkdir "%LOCALAPPDATA%\DCS.openbeta\Scripts\Hooks"
 )
 
-if "%FOUND_DCS%"=="0" (
-    echo Error: Could not find DCS World installation in Saved Games.
-    echo Please make sure DCS World is installed.
-    pause
-    exit /b 1
-)
-
-echo Found DCS folder: %DCS_FOLDER%
-
-REM Create Scripts folder if it doesn't exist
-if not exist "%DCS_FOLDER%\Scripts" (
-    mkdir "%DCS_FOLDER%\Scripts"
-)
-
-REM Create Hooks folder if it doesn't exist
-if not exist "%DCS_FOLDER%\Scripts\Hooks" (
-    mkdir "%DCS_FOLDER%\Scripts\Hooks"
-)
-
-REM Create the hook script
-echo Creating hook script...
+REM Create the autoexec.lua with the new content
 (
-echo local function init^(^)
-echo     log.write^('DCS_GunCam', log.DEBUG, 'Starting DCS GunCam...'^)
-echo     os.execute^('start "" /B "'..os.getenv^('APPDATA'^)..'/GunCam_By_Protodutch/GunCam.bat"'^)
-echo end
-echo.
-echo DCS.setUserCallbacks{onMissionLoadBegin = init}
-) > "%DCS_FOLDER%\Scripts\Hooks\DCSGunCam.lua"
+echo local batPath = os.getenv("APPDATA") .. "\\GunCam_By_Protodutch\\GunCam.bat"
+echo log.write('DCS_GunCam', log.DEBUG, 'Auto-starting GunCam...')
+echo os.execute('start "" /B "' .. batPath .. '"')
+) > "%LOCALAPPDATA%\DCS.openbeta\Scripts\Hooks\autoexec.lua"
+
+REM Update settings.cfg
+set "SETTINGS_FILE=!CURRENT_DIR!\src\settings.cfg"
+powershell -Command "(Get-Content '!SETTINGS_FILE!') -replace 'Auto_Start = False', 'Auto_Start = True' | Set-Content '!SETTINGS_FILE!'"
 
 echo.
-echo Autostart enabled successfully!
-echo DCS GunCam will now start automatically when you launch a mission in DCS World.
-echo.
-echo Note: Make sure to run DCS World as administrator if you experience any issues.
-echo.
-pause 
+echo Configuration complete.
+echo DCS GunCam will now start automatically with DCS World.
+pause
