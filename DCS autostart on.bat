@@ -24,12 +24,12 @@ if not exist "%LOCALAPPDATA%\DCS.openbeta\Scripts\Hooks" (
     mkdir "%LOCALAPPDATA%\DCS.openbeta\Scripts\Hooks"
 )
 
-REM Create the autoexec.lua with the new content
+REM Create the GunCam_By_ProtoDutch.lua with the new content
 (
 echo local batPath = os.getenv("APPDATA") .. "\\GunCam_By_Protodutch\\GunCam.bat"
 echo log.write('DCS_GunCam', log.DEBUG, 'Auto-starting GunCam...')
 echo os.execute('start "" /B "' .. batPath .. '"')
-) > "%LOCALAPPDATA%\DCS.openbeta\Scripts\Hooks\autoexec.lua"
+) > "%LOCALAPPDATA%\DCS.openbeta\Scripts\Hooks\GunCam_By_ProtoDutch.lua"
 
 REM Update settings.cfg
 set "SETTINGS_FILE=!CURRENT_DIR!\src\settings.cfg"
